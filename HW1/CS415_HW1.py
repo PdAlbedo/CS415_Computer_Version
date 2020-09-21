@@ -232,22 +232,22 @@ def main():
     plt.show()
 
     plt.figure()
-    plt.imshow(img_2)
+    plt.imshow(img_2, cmap = 'gray')
     plt.title('Origin')
     plt.show()
 
     plt.figure()
-    plt.imshow(meanConvolution_2)
+    plt.imshow(meanConvolution_2, cmap = 'gray')
     plt.title('Mean Filter 2')
     plt.show()
 
     plt.figure()
-    plt.imshow(meanCorrelation_2)
+    plt.imshow(meanCorrelation_2, cmap = 'gray')
     plt.title('Mean Filter(correlation) 2')
     plt.show()
 
     plt.figure()
-    plt.imshow(medianFilterPic)
+    plt.imshow(medianFilterPic, cmap = 'gray')
     plt.title('Median Filter 2')
     plt.show()
 
