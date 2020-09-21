@@ -16,6 +16,11 @@ sys.path.insert(0, dir_path)
 
 # firstly, flip the kernel and apply the kernel to the neighborhoods and move along the image
 def ConvolutionFilter(img, kernel, flag):
+    # in case the input img is a RGB img
+    r = []
+    g = []
+    b = []
+
     i_rows = len(img)
     i_cols = len(img[0])
     k_rows, k_cols = np.shape(kernel)
