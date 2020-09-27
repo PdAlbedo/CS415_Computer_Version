@@ -75,14 +75,24 @@ def ImageGradient(img):
     # Apply the sobel filter to img
     img_x = ndimage.filters.convolve(img, sobel_x)
     img_y = ndimage.filters.convolve(img, sobel_y)
-    plt.figure()
-    plt.imshow(img_x, cmap = 'gray')
-    plt.title('X direction gradient')
-    plt.show()
-    plt.figure()
-    plt.imshow(img_y, cmap = 'gray')
-    plt.title('Y direction gradient')
-    plt.show()
+
+    # # The image if the x axis sobel operator is applied
+    # plt.figure()
+    # plt.imshow(img_x, cmap = 'gray')
+    # plt.title('X direction gradient')
+    # plt.show()
+    #
+    # # The image if the y axis sobel operator is applied
+    # plt.figure()
+    # plt.imshow(img_y, cmap = 'gray')
+    # plt.title('Y direction gradient')
+    # plt.show()
+
+    """
+    Personal understanding:
+    the x axis sobel operator will cause a result looks "vertical"
+    the y axis sobel operator will cause a result looks "horizontal"
+    """
 
     # Apply the formula, Consider gradient of x direction and y direction as wwo right-angled edges
     Mag = np.hypot(img_x, img_y)
@@ -91,7 +101,30 @@ def ImageGradient(img):
     return Mag, Theta
 
 
+# Thinner the edges by find the local maxima
+def NonmaximaSuppress(img, dir):
+    img_len, img_wid = img.shape
+    dst = np.zeros(img_len, img_wid)
+
+
+# This function should be deleted     TODO
+def test():
+    print()
+    print("-------------------------------")
+    print("The following is just for test")
+
+    s = np.array([1, 1, 2, 3, 4, 5, 7])
+    s[s > 2] += 20
+    print(s)
+
+    print("The above is just for test")
+    print("-------------------------------")
+    print()
+
+
 def main():
+    # Should be deleted     TODO
+    test()  # Should be deleted     TODO
     # Input the images
     imgPath = "lena_gray.png"
     img = plt.imread(imgPath)
@@ -99,18 +132,24 @@ def main():
     imgPath_2 = "test.png"
     img_2 = plt.imread(imgPath_2)
 
-    kernel_size = int(input('Enter the kernel edges\' length: '))
-    sigma = int(input('Enter value of sigma: '))
+    # The input is flexible
+    # kernel_size = int(input('Enter the kernel edges\' length: '))  TODO
+    # sigma = int(input('Enter value of sigma: '))  TODO
+
+    kernel_size = 3  # Should be deleted     TODO
+    sigma = 3  # Should be deleted     TODO
+
     GaussianSmoothed = GaussianSmooth(img_2, kernel_size, sigma)
     Mag, Theta = ImageGradient(GaussianSmoothed)
-    plt.figure()
-    plt.imshow(Mag, cmap = 'gray')
-    plt.title('Gradient Magnitude')
-    plt.show()
-    plt.figure()
-    plt.imshow(Theta, cmap = 'gray')
-    plt.title('Gradient Direction')
-    plt.show()
+    print(type(Theta))
+    # plt.figure()
+    # plt.imshow(Mag, cmap = 'gray')
+    # plt.title('Gradient Magnitude')
+    # plt.show()
+    # plt.figure()
+    # plt.imshow(Theta, cmap = 'gray')
+    # plt.title('Gradient Direction')
+    # plt.show()
 
 
 if __name__ == '__main__':
