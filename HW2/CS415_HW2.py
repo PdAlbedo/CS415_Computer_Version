@@ -36,31 +36,33 @@ def GaussianSmooth(img, kernel_size, sigma):
 
     kernel = kernel / sum_val
 
+    """ 
     # Implement the Convolution filter manually
-    # # Get the length and width of image
-    # i_rows = len(img)
-    # i_cols = len(img[0])
-    #
-    # # flip the kernel
-    # for i in range(kernel_size // 2):
-    #     kernel[i], kernel[kernel_size - i - 1] = kernel[kernel_size - 1 - i], kernel[i]
-    # for j in range(kernel_size):
-    #     for k in range(kernel_size // 2):
-    #         kernel[j][k], kernel[j][kernel_size - k - 1] = kernel[j][kernel_size - k - 1], kernel[j][k]
-    #
-    # # implement the pad of the boarder of image
-    # pad = (kernel_size - 1) // 2
-    # img = cv2.copyMakeBorder(img, pad, pad, pad, pad, cv2.BORDER_REPLICATE)
-    #
-    # # Initialized output image
-    # dst = np.zeros((i_rows, i_cols), dtype = "float32")
-    # # get the pad rid of the desired output
-    # for i in np.arange(pad, i_rows + pad):
-    #     for j in np.arange(pad, i_cols + pad):
-    #         # The area from original image which is applied by the kernel
-    #         sample_from_img = img[i - pad: i + pad + 1, j - pad: j + pad + 1]
-    #         k = (sample_from_img * kernel).sum()
-    #         dst[i - pad, j - pad] = k
+    # Get the length and width of image
+    i_rows = len(img)
+    i_cols = len(img[0])
+
+    # flip the kernel
+    for i in range(kernel_size // 2):
+        kernel[i], kernel[kernel_size - i - 1] = kernel[kernel_size - 1 - i], kernel[i]
+    for j in range(kernel_size):
+        for k in range(kernel_size // 2):
+            kernel[j][k], kernel[j][kernel_size - k - 1] = kernel[j][kernel_size - k - 1], kernel[j][k]
+
+    # implement the pad of the boarder of image
+    pad = (kernel_size - 1) // 2
+    img = cv2.copyMakeBorder(img, pad, pad, pad, pad, cv2.BORDER_REPLICATE)
+
+    # Initialized output image
+    dst = np.zeros((i_rows, i_cols), dtype = "float32")
+    # get the pad rid of the desired output
+    for i in np.arange(pad, i_rows + pad):
+        for j in np.arange(pad, i_cols + pad):
+            # The area from original image which is applied by the kernel
+            sample_from_img = img[i - pad: i + pad + 1, j - pad: j + pad + 1]
+            k = (sample_from_img * kernel).sum()
+            dst[i - pad, j - pad] = k
+    """
 
     dst = ndimage.filters.convolve(img, kernel)
 
@@ -76,13 +78,13 @@ def ImageGradient(img):
     img_x = ndimage.filters.convolve(img, sobel_x)
     img_y = ndimage.filters.convolve(img, sobel_y)
 
-    # # The image if the x axis sobel operator is applied
+    # # The image when the x axis sobel operator is applied
     # plt.figure()
     # plt.imshow(img_x, cmap = 'gray')
     # plt.title('X direction gradient')
     # plt.show()
-    #
-    # # The image if the y axis sobel operator is applied
+
+    # # The image when the y axis sobel operator is applied
     # plt.figure()
     # plt.imshow(img_y, cmap = 'gray')
     # plt.title('Y direction gradient')
@@ -95,19 +97,68 @@ def ImageGradient(img):
     """
 
     # Apply the formula, Consider gradient of x direction and y direction as wwo right-angled edges
-    Mag = np.hypot(img_x, img_y)
+    # Mag = np.hypot(img_x, img_y)
+    Mag = np.sqrt(np.square(img_x) + np.square(img_y))
     Theta = np.arctan2(img_x, img_y)
 
     return Mag, Theta
 
 
 # Thinner the edges by find the local maxima
-def NonmaximaSuppress(img, dir):
+def NonmaximaSuppress(img, direct):
+    # Get the length and width of the image and declare a blank img as output
     img_len, img_wid = img.shape
-    dst = np.zeros(img_len, img_wid)
+
+    # Not which of the following two operation is correct       TODO
+    # dst = np.zeros((img_len, img_wid), dtype = np.int32)
+    dst = np.copy(img)
+    # Convert the angle's value in polar coordinates to the real values
+    # Shrink the range to 0-180, b/c a value and the value plus 180 is on the same line
+    # However, AS FOR MY UNDERSTANDING the direction is not the same
+    angle = (direct * 180.0) / np.pi
+    angle[angle < 0] += 180.0
+
+    # Go through the img
+    for i in range(1, img_len - 1):
+        for j in range(1, img_wid - 1):
+            # Initialize the values which should be at two sides of ridges
+            left = 255
+            right = 255
+
+            # Horizontal line
+            if (0 <= angle[i, j] < 22.5) or (157.5 <= angle[i, j] < 180):
+                left = img[i - 1, j]
+                right = img[i + 1, j]
+
+            # Vertical line
+            elif 67.5 <= angle[i, j] < 112.5:
+                left = img[i, j - 1]
+                right = img[i, j + 1]
+
+            # Line of angle 45
+            elif 22.5 <= angle[i, j] < 67.5:
+                left = img[i - 1, j - 1]
+                right = img[i + 1, j + 1]
+
+            # Line of angle 135
+            elif 112.5 <= angle[i, j] < 157.5:
+                left = img[i - 1, j + 1]
+                right = img[i + 1, j - 1]
+
+            # Determine if the current processing point is a local maxima
+            if img[i, j] > left and img[i, j] > right:
+                dst[i, j] = img[i, j]
+            else:
+                dst[i, j] = 0
+
+    return dst
 
 
-# This function should be deleted     TODO
+def EdgeLinking(img, weak_threshold, strong_threshold):
+    print("Not implemented yet")
+
+
+# This function should be deleted     TODO      Delete
 def test():
     print()
     print("-------------------------------")
@@ -117,14 +168,22 @@ def test():
     s[s > 2] += 20
     print(s)
 
+    s = np.array([[1, 2, 3],
+                  [4, 5, 6],
+                  [7, 8, 9]])
+    print(s[1 - 1, 1])
+    print(s[1 + 1, 1])
+
     print("The above is just for test")
     print("-------------------------------")
     print()
 
 
+# The function above will be deleted    TODO        Delete
+
 def main():
-    # Should be deleted     TODO
-    test()  # Should be deleted     TODO
+    test()  # TODO      Delete
+
     # Input the images
     imgPath = "lena_gray.png"
     img = plt.imread(imgPath)
@@ -133,19 +192,20 @@ def main():
     img_2 = plt.imread(imgPath_2)
 
     # The input is flexible
-    # kernel_size = int(input('Enter the kernel edges\' length: '))  TODO
-    # sigma = int(input('Enter value of sigma: '))  TODO
+    # kernel_size = int(input('Enter the kernel edges\' length: '))  TODO       Uncomment
+    # sigma = int(input('Enter value of sigma: '))  TODO                        Uncomment
 
-    kernel_size = 3  # Should be deleted     TODO
-    sigma = 3  # Should be deleted     TODO
+    kernel_size = 3  # Should be deleted     TODO                               Delete
+    sigma = 3  # Should be deleted     TODO                                     Delete
 
-    GaussianSmoothed = GaussianSmooth(img_2, kernel_size, sigma)
+    GaussianSmoothed = GaussianSmooth(img, kernel_size, sigma)
     Mag, Theta = ImageGradient(GaussianSmoothed)
-    print(type(Theta))
-    # plt.figure()
-    # plt.imshow(Mag, cmap = 'gray')
-    # plt.title('Gradient Magnitude')
-    # plt.show()
+    Mag = NonmaximaSuppress(Mag, Theta)
+
+    plt.figure()
+    plt.imshow(Mag, cmap = 'gray')
+    plt.title('Gradient Magnitude After Nonmaxima Press')
+    plt.show()
     # plt.figure()
     # plt.imshow(Theta, cmap = 'gray')
     # plt.title('Gradient Direction')
