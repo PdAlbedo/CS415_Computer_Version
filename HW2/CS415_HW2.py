@@ -78,17 +78,19 @@ def ImageGradient(img):
     img_x = ndimage.filters.convolve(img, sobel_x)
     img_y = ndimage.filters.convolve(img, sobel_y)
 
-    # # The image when the x axis sobel operator is applied
-    # plt.figure()
-    # plt.imshow(img_x, cmap = 'gray')
-    # plt.title('X direction gradient')
-    # plt.show()
+    # The image when the x axis sobel operator is applied
+    plt.figure()
+    plt.imshow(img_x, cmap = 'gray')
+    plt.title('X direction gradient')
+    plt.show()
+    plt.savefig('X_direction.png')
 
-    # # The image when the y axis sobel operator is applied
-    # plt.figure()
-    # plt.imshow(img_y, cmap = 'gray')
-    # plt.title('Y direction gradient')
-    # plt.show()
+    # The image when the y axis sobel operator is applied
+    plt.figure()
+    plt.imshow(img_y, cmap = 'gray')
+    plt.title('Y direction gradient')
+    plt.show()
+    plt.savefig('Y_direction.png')
 
     """
     Personal understanding:
@@ -109,9 +111,10 @@ def NonmaximaSuppress(img, direct):
     # Get the length and width of the image and declare a blank img as output
     img_len, img_wid = img.shape
 
-    # Not which of the following two operation is correct       TODO
+    # TODO      Not sure why the result if different between the following two expressions
     # dst = np.zeros((img_len, img_wid), dtype = np.int32)
     dst = np.copy(img)
+
     # Convert the angle's value in polar coordinates to the real values
     # Shrink the range to 0-180, b/c a value and the value plus 180 is on the same line
     # However, AS FOR MY UNDERSTANDING the direction is not the same
@@ -154,36 +157,47 @@ def NonmaximaSuppress(img, direct):
     return dst
 
 
-def EdgeLinking(img, weak_threshold, strong_threshold):
-    print("Not implemented yet")
+def EdgeLinking(img, strong_threshold, weak_threshold):
+    # Apply the given ratio to the get the threshold with a real value
+    strong_threshold = img.max() * strong_threshold
+    weak_threshold = img.max() * weak_threshold
 
+    img_len, img_wid = img.shape
+    dst = np.zeros((img_len, img_wid), dtype = np.int32)
 
-# This function should be deleted     TODO      Delete
-def test():
-    print()
-    print("-------------------------------")
-    print("The following is just for test")
+    # Define the value of strong edge, weak edge, and zero edge
+    strong_edge = np.int32(255)
+    weak_edge = np.int32(100)
+    zero_edge = np.int32(0)
 
-    s = np.array([1, 1, 2, 3, 4, 5, 7])
-    s[s > 2] += 20
-    print(s)
+    # Determine the coordinate position of the three kind of edges
+    strong_i, strong_j = np.where(img >= strong_threshold)
+    weak_i, weak_j = np.where((img < strong_threshold) & (img >= weak_threshold))
+    zeros_i, zeros_j = np.where(img < weak_threshold)
 
-    s = np.array([[1, 2, 3],
-                  [4, 5, 6],
-                  [7, 8, 9]])
-    print(s[1 - 1, 1])
-    print(s[1 + 1, 1])
+    # Make the change to the output
+    dst[strong_i, strong_j] = strong_edge
+    dst[weak_i, weak_j] = weak_edge
+    dst[zeros_i, zeros_j] = zero_edge
 
-    print("The above is just for test")
-    print("-------------------------------")
-    print()
+    # Go through the output we have here, and determine if, for the weak edges we are currently processing, there exists
+    # any strong edges. If so, change the weak edge to strong edge. If not, change the weak edge to zero edge
+    for i in range(1, img_len - 1):
+        for j in range(1, img_wid - 1):
+            if dst[i, j] == weak_edge:
+                # 8 positions abound the edge we are currently processing
+                if ((dst[i + 1, j - 1] == strong_edge) or (dst[i + 1, j] == strong_edge) or
+                        (dst[i + 1, j + 1] == strong_edge) or (dst[i, j - 1] == strong_edge) or
+                        (dst[i, j + 1] == strong_edge) or (dst[i - 1, j - 1] == strong_edge) or
+                        (dst[i - 1, j] == strong_edge) or (dst[i - 1, j + 1] == strong_edge)):
+                    dst[i, j] = strong_edge
+                else:
+                    dst[i, j] = zero_edge
 
+    return dst
 
-# The function above will be deleted    TODO        Delete
 
 def main():
-    test()  # TODO      Delete
-
     # Input the images
     imgPath = "lena_gray.png"
     img = plt.imread(imgPath)
@@ -192,24 +206,55 @@ def main():
     img_2 = plt.imread(imgPath_2)
 
     # The input is flexible
-    # kernel_size = int(input('Enter the kernel edges\' length: '))  TODO       Uncomment
-    # sigma = int(input('Enter value of sigma: '))  TODO                        Uncomment
+    kernel_size = int(input('Enter the kernel edges\' length: '))
+    sigma = int(input('Enter value of sigma: '))
 
-    kernel_size = 3  # Should be deleted     TODO                               Delete
-    sigma = 3  # Should be deleted     TODO                                     Delete
+    # kernel_size = 3
+    # sigma = 3
 
+    # Apply the Gaussian Blur to the image
     GaussianSmoothed = GaussianSmooth(img, kernel_size, sigma)
+
+    plt.figure()
+    plt.imshow(GaussianSmoothed, cmap = 'gray')
+    plt.title('GaussianSmoothed Image')
+    plt.show()
+    plt.savefig('GaussianSmoothed_image.png')
+
+    # Compute the Gradient Magnitude and direction
     Mag, Theta = ImageGradient(GaussianSmoothed)
+
+    plt.figure()
+    plt.imshow(Mag, cmap = 'gray')
+    plt.title('Gradient Magnitude')
+    plt.show()
+    plt.savefig('Mag.png')
+
+    plt.figure()
+    plt.imshow(Theta, cmap = 'gray')
+    plt.title('Gradient Direction')
+    plt.show()
+    plt.savefig('Theta.png')
+
+    # Apply NMS to edge detected image
     Mag = NonmaximaSuppress(Mag, Theta)
 
     plt.figure()
     plt.imshow(Mag, cmap = 'gray')
-    plt.title('Gradient Magnitude After Nonmaxima Press')
+    plt.title('Gradient Magnitude After NMS')
     plt.show()
-    # plt.figure()
-    # plt.imshow(Theta, cmap = 'gray')
-    # plt.title('Gradient Direction')
-    # plt.show()
+    plt.savefig('Mag_after_NMS,png')
+
+    # Separate the points in the image into 3 groups: strong edge, weak edge, and zero edge
+    # link every strong edges
+    # Set the strong edge value 3 times greater than weak edge
+    Linked_edges = EdgeLinking(Mag, 0.03, 0.01)
+
+    plt.figure()
+    plt.imshow(Linked_edges, cmap = 'gray')
+    plt.title('Linked Edges')
+    plt.show()
+    plt.savefig('Linked_edges.png')
 
 
 if __name__ == '__main__':
