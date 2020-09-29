@@ -173,12 +173,12 @@ def EdgeLinking(img, strong_threshold, weak_threshold):
     # Determine the coordinate position of the three kind of edges
     strong_i, strong_j = np.where(img >= strong_threshold)
     weak_i, weak_j = np.where((img < strong_threshold) & (img >= weak_threshold))
-    zeros_i, zeros_j = np.where(img < weak_threshold)
+    zero_i, zero_j = np.where(img < weak_threshold)
 
     # Make the change to the output
     dst[strong_i, strong_j] = strong_edge
     dst[weak_i, weak_j] = weak_edge
-    dst[zeros_i, zeros_j] = zero_edge
+    dst[zero_i, zero_j] = zero_edge
 
     # Go through the output we have here, and determine if, for the weak edges we are currently processing, there exists
     # any strong edges. If so, change the weak edge to strong edge. If not, change the weak edge to zero edge
