@@ -18,10 +18,6 @@ def line_detection_hough_transform(image_o, img, sz, sig, rho_int, theta_int, im
     img_len, img_wid = img.shape
     # Calculate the max value of rho
     rho_limit = round(np.sqrt(np.square(img_len) + np.square(img_wid)))
-    #
-    # # Divide the value on arises into segments
-    # rho_interval = (2 * rho_limit) / rho_seg
-    # theta_interval = 180 / theta_seg
 
     # Determine the range of rho and theta in hough space
     rho_range = np.arange(-rho_limit, rho_limit, rho_int)
