@@ -59,7 +59,7 @@ def line_detection_hough_transform(image_o, img, sz, sig, rho_int, theta_int, im
                 subplot3.plot(x_axis, y_axis, color = "white", alpha = 0.05)
 
     # Threshold some high values then draw the line
-    # As for this part, after I tried some threshold values, 50 might be a good one
+    # As for this part, after I tried some threshold values, 45 might be a good one
     edges = np.where(accumulator > 45)
     positions = list(zip(edges[0], edges[1]))
 
