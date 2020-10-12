@@ -31,7 +31,7 @@ def line_detection_hough_transform(image_o, img, sz, sig, rho_int, theta_int, im
     accumulator = np.zeros((len(rho_range), len(theta_range)))
 
     title = 'Image: ' + str(img_path) + '; Gaussian kernel size: ' + str(sz) + '; Sigma: ' + str(sig) + \
-            '; Rho axis segments: ' + str(rho_int) + '; Theta axis segments: ' + str(theta_int)
+            '; Rho axis interval: ' + str(rho_int) + '; Theta axis interval: ' + str(theta_int)
     file_name = 'Results/Image_' + str(img_path).partition('.')[0] + '_Sig_' + str(sig) + '_Int_' \
                 + str(rho_int) + '.png'
 
@@ -60,7 +60,7 @@ def line_detection_hough_transform(image_o, img, sz, sig, rho_int, theta_int, im
 
     # Threshold some high values then draw the line
     # As for this part, after I tried some threshold values, 50 might be a good one
-    edges = np.where(accumulator > 50)
+    edges = np.where(accumulator > 45)
     positions = list(zip(edges[0], edges[1]))
 
     # Use line equation to draw detected line on an original image
@@ -100,9 +100,9 @@ if __name__ == '__main__':
     image = cv2.GaussianBlur(image, (kernel_size, kernel_size), sigma)
 
     # Apply Canny edge detector to the image
-    image = cv2.Canny(image, 10, 30)
+    image = cv2.Canny(image, 25, 75)
 
     # Apply line detection by hough transform
-    rho_interval = float(input('Enter a value for rho axis segments in hough space: '))
-    theta_interval = float(input('Enter a value for theta axis segments in hough space: '))
+    rho_interval = float(input('Enter a value for rho axis interval in hough space: '))
+    theta_interval = float(input('Enter a value for theta axis interval in hough space: '))
     line_detection_hough_transform(image_origin, image, kernel_size, sigma, rho_interval, theta_interval, imgPath)
